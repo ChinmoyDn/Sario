@@ -7,6 +7,10 @@ function Hero(game, x, y) {
 Hero.prototype = Object.create(Phaser.Sprite.prototype);
 Hero.prototype.constructor = Hero;
 
+Hero.prototype.move = function (direction) {
+  this.x += direction * 2.5; // 2.5 pixels each frame
+}
+
 PlayState = {};
 
 window.onload = function () {
@@ -49,3 +53,23 @@ PlayState._spawnCharacters = function (data) {
   this.game.add.existing(this.hero);
 };
 
+PlayState.init = function () {
+  this.game.renderer.renderSession.roundPixels = true;
+  this.keys = this.game.input.keyboard.addKeys({
+    left: Phaser.KeyCode.LEFT,
+    right: Phaser.KeyCode.RIGHT
+  });
+};
+
+PlayState.update = function () {
+  this._handleInput();
+}
+
+PlayState._handleInput = function() {
+  if (this.keys.left.isDown) { // move hero left
+    this.hero.move(-1);
+  }else if (this.keys.right.isDown) { // move hero right
+    this.hero.move(1);
+  }
+
+}
