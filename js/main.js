@@ -16,6 +16,33 @@ Hero.prototype.move = function (direction) {
 
 PlayState = {};
 
+PlayState.init = function () {
+  this.game.renderer.renderSession.roundPixels = true;
+  this.keys = this.game.input.keyboard.addKeys({
+    left: Phaser.KeyCode.LEFT,
+    right: Phaser.KeyCode.RIGHT,
+    up: Phaser.KeyCode.UP
+  });
+
+  this.keys.up.onDown.add(function () {
+    let didJump = this.hero.jump();
+    if (didJump) {
+      this.sfx.jump.play();
+    }
+  }, this) 
+};
+
+Hero.prototype.jump = function () {
+  const JUMP_SPEED = 600;
+  let canJump = this.body.touching.down;
+
+  if(canJump) {
+    this.body.velocity.y = -JUMP_SPEED;
+  }
+
+  return canJump;
+}
+
 window.onload = function () {
   let game = new Phaser.Game(960, 600, Phaser.AUTO, 'game');
   game.state.add('play', PlayState);
@@ -32,9 +59,14 @@ PlayState.preload = function () {
   this.game.load.image('grass:2x1','images/grass_2x1.png');
   this.game.load.image('grass:1x1','images/grass_1x1.png');
   this.game.load.image('hero', 'images/hero_stopped.png');
+  this.game.load.audio('sfx:jump', 'audio/jump.wav');
 }
 
 PlayState.create = function () {
+  // create sound entities
+  this.sfx = {
+    jump: this.game.add.audio('sfx:jump')
+  }
   this.game.add.image(0, 0, 'background');
   this._loadLevel(this.game.cache.getJSON('level:1'));
 }
@@ -64,14 +96,6 @@ PlayState._spawnCharacters = function (data) {
   // spawn hero
   this.hero = new Hero(this.game, data.hero.x, data.hero.y);
   this.game.add.existing(this.hero);
-};
-
-PlayState.init = function () {
-  this.game.renderer.renderSession.roundPixels = true;
-  this.keys = this.game.input.keyboard.addKeys({
-    left: Phaser.KeyCode.LEFT,
-    right: Phaser.KeyCode.RIGHT
-  });
 };
 
 PlayState.update = function () {
