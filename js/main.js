@@ -2,13 +2,16 @@ function Hero(game, x, y) {
   // calll Phaser.sprite constructor
   Phaser.Sprite.call(this, game, x, y, 'hero');
   this.anchor.set(0.5, 0.5);
+  this.game.physics.enable(this);
+  this.body.collideWorldBounds = true;
 }
 
 Hero.prototype = Object.create(Phaser.Sprite.prototype);
 Hero.prototype.constructor = Hero;
 
 Hero.prototype.move = function (direction) {
-  this.x += direction * 2.5; // 2.5 pixels each frame
+  const SPEED = 200;
+  this.body.velocity.x = direction * SPEED;
 }
 
 PlayState = {};
@@ -37,14 +40,24 @@ PlayState.create = function () {
 }
 
 PlayState._loadLevel = function (data) {
+  // create all the groupd/layers that we need
+  this.platforms = this.game.add.group();
   // spawn all platforms
   data.platforms.forEach(this._spawnPlatform, this);
   // spawn hero and enemies
   this._spawnCharacters({hero: data.hero});
+  // enable gravity
+  const GRAVITY = 1200;
+  this.game.physics.arcade.gravity.y = GRAVITY;
 }
 
 PlayState._spawnPlatform = function (platform) {
-  this.game.add.sprite(platform.x, platform.y, platform.image);
+  let sprite = this.platforms.create(
+    platform.x, platform.y, platform.image);
+
+  this.game.physics.enable(sprite);
+  sprite.body.allowGravity = false;
+  sprite.body.immovable = true;
 }
 
 PlayState._spawnCharacters = function (data) { 
@@ -62,7 +75,12 @@ PlayState.init = function () {
 };
 
 PlayState.update = function () {
+  this._handleCollisions();
   this._handleInput();
+}
+
+PlayState._handleCollisions = function () {
+  this.game.physics.arcade.collide(this.hero, this.platforms);
 }
 
 PlayState._handleInput = function() {
@@ -70,6 +88,8 @@ PlayState._handleInput = function() {
     this.hero.move(-1);
   }else if (this.keys.right.isDown) { // move hero right
     this.hero.move(1);
+  }else { // stop
+    this.hero.move(0);
   }
 
 }
