@@ -64,6 +64,7 @@ PlayState.preload = function () {
   this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
   this.game.load.audio('sfx:coin', 'audio/coin.wav');
   this.game.load.spritesheet('spider', 'images/spider.png', 42, 32);
+  this.game.load.audio('sfx:stomp', 'audio/stomp.wav');
 }
 
 function Spider(game, x, y){
@@ -180,6 +181,12 @@ PlayState._handleCollisions = function () {
   this.game.physics.arcade.collide(this.spiders, this.platforms);
   this.game.physics.arcade.collide(this.hero, this.platforms);
   this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoin, null, this);
+  this.game.physics.arcade.overlap(this.hero, this.spiders, this._onHeroVsEnemy, null, this);
+}
+
+PlayState._onHeroVsEnemy = function (hero, enemy) {
+  this.sfx.stomp.play();
+  this.game.state.restart();
 }
 
 PlayState._onHeroVsCoin = function (hero, coin) {
