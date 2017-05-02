@@ -186,8 +186,13 @@ PlayState._handleCollisions = function () {
 }
 
 PlayState._onHeroVsEnemy = function (hero, enemy) {
-  this.sfx.stomp.play();
-  this.game.state.restart();
+  if (hero.body.velocity.y > 0) { // kill the enemy when hero is falling
+    enemy.kill();
+    this.sfx.stomp.play();
+  } else {
+    this.sfx.stomp.play();
+    this.game.state.restart(); 
+  }
 }
 
 PlayState._onHeroVsCoin = function (hero, coin) {
