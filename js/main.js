@@ -70,6 +70,8 @@ PlayState.preload = function () {
 function Spider(game, x, y){
   Phaser.Sprite.call(this, game, x, y, 'spider');
 
+  this.animations.add('die', [0, 4, 0, 4, 0, 4, 3, 3, 3, 3, 3, 3], 12);
+
   //anchor
   this.anchor.set(0.5);
   //animaiton
@@ -82,6 +84,7 @@ function Spider(game, x, y){
   this.body.collideWorldBounds = true;
   this.body.velocity.x = Spider.SPEED;
 }
+
 
 Spider.SPEED = 100;
 
@@ -98,6 +101,13 @@ Spider.prototype.update = function () {
   }
 }
 
+Spider.prototype.die = function () {
+  this.body.enable = false;
+
+  this.animations.play('die').onComplete.addOnce(function () {
+    this.kill(); 
+  }, this);
+}
 
 PlayState.create = function () {
   // create sound entities
@@ -187,12 +197,18 @@ PlayState._handleCollisions = function () {
 
 PlayState._onHeroVsEnemy = function (hero, enemy) {
   if (hero.body.velocity.y > 0) { // kill the enemy when hero is falling
-    enemy.kill();
+    hero.bounce();
+    enemy.die();
     this.sfx.stomp.play();
   } else {
     this.sfx.stomp.play();
     this.game.state.restart(); 
   }
+}
+
+Hero.prototype.bounce = function () {
+  const BOUNCE_SPEED = 200;
+  this.body.velocity.y = -BOUNCE_SPEED;
 }
 
 PlayState._onHeroVsCoin = function (hero, coin) {
