@@ -30,6 +30,8 @@ PlayState.init = function () {
       this.sfx.jump.play();
     }
   }, this) 
+
+  this.coinPickUpCount = 0;
 };
 
 Hero.prototype.jump = function () {
@@ -60,11 +62,26 @@ PlayState.preload = function () {
   this.game.load.image('grass:1x1','images/grass_1x1.png');
   this.game.load.image('hero', 'images/hero_stopped.png');
   this.game.load.image('invisible-wall', 'images/invisible_wall.png');
+  this.game.load.image('icon:coin', 'images/coin_icon.png');
+  this.game.load.image('font:numbers', 'images/numbers.png');
   this.game.load.audio('sfx:jump', 'audio/jump.wav');
   this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
   this.game.load.audio('sfx:coin', 'audio/coin.wav');
   this.game.load.spritesheet('spider', 'images/spider.png', 42, 32);
   this.game.load.audio('sfx:stomp', 'audio/stomp.wav');
+}
+
+PlayState._createHud = function () {
+  const NUMBERS_STR = '0123456789X';
+  this.coinFont = this.game.add.retroFont('font:numbers', 20, 26, NUMBERS_STR, 6);
+  let coinIcon = this.game.make.image(0, 0, 'icon:coin');
+  let coinScoreImg = this.game.make.image(coinIcon.x + coinIcon.width, coinIcon.height / 2, this.coinFont);
+  coinScoreImg.anchor.set(0, 0.5);
+
+  this.hud = this.game.add.group();
+  this.hud.add(coinIcon);
+  this.hud.position.set(10, 10);
+  this.hud.add(coinScoreImg);
 }
 
 function Spider(game, x, y){
@@ -118,6 +135,7 @@ PlayState.create = function () {
   }
   this.game.add.image(0, 0, 'background');
   this._loadLevel(this.game.cache.getJSON('level:1'));
+  this._createHud();
 }
 
 PlayState._loadLevel = function (data) {
@@ -183,6 +201,7 @@ PlayState._spawnCharacters = function (data) {
 PlayState.update = function () {
   this._handleCollisions();
   this._handleInput();
+  this.coinFont.text = `x${this.coinPickUpCount}`;
 }
 
 PlayState._handleCollisions = function () {
@@ -214,6 +233,7 @@ Hero.prototype.bounce = function () {
 PlayState._onHeroVsCoin = function (hero, coin) {
   this.sfx.coin.play();
   coin.kill();
+  this.coinPickUpCount++;
 }
 
 PlayState._handleInput = function() {
